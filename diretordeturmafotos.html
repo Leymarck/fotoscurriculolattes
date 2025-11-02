@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Fotos Diretor de Turma</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f2f2f2;
+      padding-bottom: 80px;
+      color: #333;
+    }
+
+    header {
+      background-color: #007b33;
+      color: #fff;
+      padding: 20px;
+      font-size: 1.6rem;
+      font-weight: bold;
+    }
+
+    main {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    button {
+      margin: 10px;
+      padding: 12px 24px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 5px;
+      background-color: #009944;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #007b33;
+    }
+
+    video,
+    img {
+      margin-top: 20px;
+      max-width: 100%;
+      height: auto;
+      border-radius: 6px;
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+    }
+
+    canvas {
+      display: none;
+    }
+
+    footer {
+      background-color: #007b33;
+      color: #fff;
+      text-align: center;
+      padding: 15px 10px;
+      font-size: 0.9rem;
+      position: relative;
+      bottom: 0;
+      width: 100%;
+    }
+
+    @media (min-width: 768px) {
+      main {
+        padding: 40px;
+      }
+
+      button {
+        font-size: 1.1rem;
+        padding: 14px 32px;
+      }
+
+      footer {
+        position: fixed;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    DIRETOR DE TURMA FOTOS
+  </header>
+
+  <main>
+    <button id="abrirCamera">Abrir Câmera</button>
+
+    <video id="video" autoplay playsinline style="display: none;"></video>
+    <button id="tirarFoto" style="display: none;">Tirar Foto</button>
+
+    <canvas id="canvas" width="800" height="800" style="display: none;"></canvas>
+    <img id="imagemCapturada" src="" alt="Foto capturada" style="display: none;" />
+  </main>
+
+  <footer>
+    2025 - TODOS OS DIREITOS RESERVADOS 
+    <button class="btn" type="button"> <a href="index.html" style="color: #eef2ff;"> Voltar </a> </button>
+  </footer>
+
+  <script>
+    const abrirCameraBtn = document.getElementById('abrirCamera');
+    const video = document.getElementById('video');
+    const tirarFotoBtn = document.getElementById('tirarFoto');
+    const canvas = document.getElementById('canvas');
+    const img = document.getElementById('imagemCapturada');
+
+    let stream;
+
+    abrirCameraBtn.addEventListener('click', async () => {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            width: { ideal: 800 },
+            height: { ideal: 800 },
+            facingMode: { exact: "environment" }
+          }
+        });
+      } catch (err) {
+        console.warn("Câmera traseira indisponível, tentando padrão...");
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: true
+        });
+      }
+
+      video.srcObject = stream;
+      video.style.display = 'block';
+      tirarFotoBtn.style.display = 'inline-block';
+    });
+
+    tirarFotoBtn.addEventListener('click', () => {
+      const context = canvas.getContext('2d');
+      canvas.width = 800;
+      canvas.height = 800;
+      context.drawImage(video, 0, 0, 800, 800);
+
+      stream.getTracks().forEach(track => track.stop());
+
+      const dataURL = canvas.toDataURL('image/png');
+
+      const link = document.createElement('a');
+      link.href = dataURL;
+      link.download = 'foto_800x800.png';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      img.src = dataURL;
+      img.style.display = 'block';
+
+      video.style.display = 'none';
+      tirarFotoBtn.style.display = 'none';
+    });
+  </script>
+</body>
+</html>
